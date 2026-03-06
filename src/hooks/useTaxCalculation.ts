@@ -25,6 +25,7 @@ export function useTaxCalculation(): UseTaxCalculationReturn {
       setResult(calculation)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unexpected error occurred'
+      console.error(`[useTaxCalculation] Failed to calculate tax for year ${year}:`, err)
       setError(message)
     } finally {
       setIsLoading(false)

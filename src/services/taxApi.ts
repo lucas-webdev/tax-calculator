@@ -13,6 +13,11 @@ axiosRetry(apiClient, {
   retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) =>
     axiosRetry.isNetworkOrIdempotentRequestError(error) || error.response?.status === 500,
+  onRetry: (retryCount, error) => {
+    console.warn(
+      `[taxApi] Retry attempt ${retryCount}/3 — ${error.response?.status ?? 'network error'}`,
+    )
+  },
 })
 
 export const fetchTaxBrackets = async (year: number): Promise<TaxBracketsResponse> => {
