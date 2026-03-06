@@ -6,7 +6,7 @@ Built with React, TypeScript and TailwindCSS.
 ## Requirements
 
 - Node.js 22.13.0+
-- Yarn
+- pnpm
 - Docker (to run the API locally)
 
 ## Getting Started
@@ -19,19 +19,19 @@ docker run --init -p 5001:5001 -it ptsdocker16/interview-test-server
 
 ### 2. Install dependencies
 ```bash
-yarn
+pnpm install
 ```
 
 ### 3. Start the development server
 ```bash
-yarn dev
+pnpm dev
 ```
 
 The app will be available at http://localhost:5173.
 
 ## Running Tests
 ```bash
-yarn test:run
+pnpm test:run
 ```
 
 ## Environment Variables
@@ -56,8 +56,8 @@ src/
 
 ### Key Decisions
 
-**Retry logic** — The API throws random errors. The service layer uses `axios-retry` with exponential backoff, retrying up to 3 times on network errors and 500 responses.
+**pnpm as package manager** — chosen over npm and Yarn for its disk efficiency via global store with hard links, and faster installs. Also it is the strongest option today for monorepo setups.
 
-**Pure calculation logic** — Tax calculation lives in `shared/utils/taxCalculator.ts`, completely isolated from React and UI concerns. This makes it straightforward to test and reason about independently.
+**Retry logic** — As the API throws random errors I decided to use `axios-retry`, retrying up to 3 times on network errors and 500 responses.
 
 **shared/ folder** — Types and utils that are consumed across multiple layers live in `shared/` to make the boundary between domain logic and UI explicit.
