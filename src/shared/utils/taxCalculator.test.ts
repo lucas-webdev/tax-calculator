@@ -44,10 +44,11 @@ describe('calculateTax', () => {
     expect(roundToCents(result.effectiveRate * 100)).toBe(17.74)
   })
 
-  it('only returns bands with taxable amount greater than zero', () => {
+  it('returns zero taxOwed for bands above salary', () => {
     const result = calculateTax(50000, brackets2022)
-    result.bands.forEach((band) => {
-      expect(band.taxableAmount).toBeGreaterThan(0)
+    const bandsAboveSalary = result.bands.filter((band) => band.min >= 50000)
+    bandsAboveSalary.forEach((band) => {
+      expect(band.taxOwed).toBe(0)
     })
   })
 })

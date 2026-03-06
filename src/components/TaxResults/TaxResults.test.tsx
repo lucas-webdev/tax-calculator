@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import TaxResults from './TaxResults'
 import type { TaxCalculationResult } from '../../shared/types/tax'
 
@@ -14,30 +14,28 @@ const mockResult: TaxCalculationResult = {
 }
 
 describe('TaxResults', () => {
-  it('displays salary, total tax, and effective rate', () => {
+  it('displays total tax and effective rate', () => {
     render(<TaxResults result={mockResult} />)
 
-    expect(screen.getByText(/\$100,000\.00/)).toBeInTheDocument()
     expect(screen.getByText(/\$17,739\.17/)).toBeInTheDocument()
     expect(screen.getByText('17.74%')).toBeInTheDocument()
   })
 
-  it('renders a row for each tax band', () => {
-    render(<TaxResults result={mockResult} />)
-
-    const tbody = screen.getByRole('table').querySelector('tbody')!
-    const rows = within(tbody).getAllByRole('row')
-    expect(rows).toHaveLength(2)
-  })
-
-  it('displays tax owed per band', () => {
+  it('renders an entry for each tax band', () => {
     render(<TaxResults result={mockResult} />)
 
     expect(screen.getByText(/\$7,529\.55/)).toBeInTheDocument()
     expect(screen.getByText(/\$10,209\.62/)).toBeInTheDocument()
   })
 
-  it('shows infinity symbol for the top bracket', () => {
+  it('displays band range and rate', () => {
+    render(<TaxResults result={mockResult} />)
+
+    expect(screen.getByText(/15\.00%/)).toBeInTheDocument()
+    expect(screen.getByText(/20\.50%/)).toBeInTheDocument()
+  })
+
+  it('shows plus sign for the top bracket instead of a range', () => {
     const topBandResult: TaxCalculationResult = {
       salary: 300000,
       totalTax: 73353.3,
@@ -47,10 +45,10 @@ describe('TaxResults', () => {
 
     render(<TaxResults result={topBandResult} />)
 
-    expect(screen.getByText(/\u221E/)).toBeInTheDocument()
+    expect(screen.getByText(/\$221,708\.00\+/)).toBeInTheDocument()
   })
 
-  it('does not render the table when there are no bands', () => {
+  it('renders empty bands section when there are no bands', () => {
     const emptyResult: TaxCalculationResult = {
       salary: 0,
       totalTax: 0,
@@ -60,6 +58,7 @@ describe('TaxResults', () => {
 
     render(<TaxResults result={emptyResult} />)
 
-    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.getByText('Tax by Band')).toBeInTheDocument()
+    expect(screen.getByText(/\$0\.00/)).toBeInTheDocument()
   })
 })

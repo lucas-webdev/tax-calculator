@@ -1,59 +1,51 @@
-import type { TaxCalculationResult } from '../../shared/types/tax'
+import type { TaxResultsProps } from './types'
+import type { BandResult } from '../../shared/types/tax'
 
-interface TaxResultsProps {
-  result: TaxCalculationResult
-}
-
-const formatCurrency = (value: number): string =>
+const formatCurrency = (value: number) =>
   value.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' })
 
-const formatPercent = (value: number): string => `${(value * 100).toFixed(2)}%`
+const formatPercent = (value: number) => `${(value * 100).toFixed(2)}%`
+
+const isActiveBand = (band: BandResult, salary: number) =>
+  salary > band.min && salary <= (band.max ?? Infinity)
 
 export default function TaxResults({ result }: TaxResultsProps) {
+  const { totalTax, effectiveRate, bands, salary } = result
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-3 gap-4">
-        <SummaryCard label="Annual Salary" value={formatCurrency(result.salary)} />
-        <SummaryCard label="Total Tax" value={formatCurrency(result.totalTax)} />
-        <SummaryCard label="Effective Rate" value={formatPercent(result.effectiveRate)} />
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-500">Total Tax</span>
+          <span className="font-medium text-red-600">{formatCurrency(totalTax)}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-500">Effective Rate</span>
+          <span className="font-medium">{formatPercent(effectiveRate)}</span>
+        </div>
       </div>
 
-      {result.bands.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-gray-200">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 text-gray-600">
-              <tr>
-                <th className="px-4 py-3 font-medium">Bracket</th>
-                <th className="px-4 py-3 font-medium text-right">Rate</th>
-                <th className="px-4 py-3 font-medium text-right">Taxable Amount</th>
-                <th className="px-4 py-3 font-medium text-right">Tax Owed</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {result.bands.map((band) => (
-                <tr key={band.min} className="text-gray-700">
-                  <td className="px-4 py-3">
-                    {formatCurrency(band.min)} &ndash;{' '}
-                    {band.max ? formatCurrency(band.max) : '\u221E'}
-                  </td>
-                  <td className="px-4 py-3 text-right">{formatPercent(band.rate)}</td>
-                  <td className="px-4 py-3 text-right">{formatCurrency(band.taxableAmount)}</td>
-                  <td className="px-4 py-3 text-right">{formatCurrency(band.taxOwed)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="flex flex-col gap-1">
+        <h3 className="text-sm font-semibold text-gray-700">Tax by Band</h3>
+        <div className="flex flex-col gap-1">
+          {bands.map((band, index) => (
+            <div
+              key={index}
+              className={`flex justify-between rounded-md px-3 py-2 text-sm ${
+                isActiveBand(band, salary)
+                  ? 'bg-blue-50 font-semibold text-blue-700'
+                  : 'bg-gray-50 text-gray-500'
+              }`}
+            >
+              <span>
+                {formatCurrency(band.min)}
+                {band.max ? ` – ${formatCurrency(band.max)}` : '+'} ({formatPercent(band.rate)})
+              </span>
+              <span>{formatCurrency(band.taxOwed)}</span>
+            </div>
+          ))}
         </div>
-      )}
-    </div>
-  )
-}
-
-function SummaryCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="mt-1 text-xl font-semibold text-gray-900">{value}</p>
+      </div>
     </div>
   )
 }

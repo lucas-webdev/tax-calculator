@@ -5,21 +5,18 @@ export function calculateTax(salary: number, brackets: TaxBracket[]): TaxCalcula
     return { salary, totalTax: 0, effectiveRate: 0, bands: [] }
   }
 
-  const bands: BandResult[] = brackets
-    .map((bracket) => {
-      const bandMax = bracket.max ?? Infinity
+  const bands: BandResult[] = brackets.map((bracket) => {
+    const bandMax = bracket.max ?? Infinity
 
-      if (salary <= bracket.min) {
-        return { ...bracket, taxableAmount: 0, taxOwed: 0 }
-      }
+    if (salary <= bracket.min) {
+      return { ...bracket, taxableAmount: 0, taxOwed: 0 }
+    }
 
-      // clamp salary to the band ceiling, then subtract the floor — progressive tax core
-      const taxableAmount = Math.min(salary, bandMax) - bracket.min
-      const taxOwed = taxableAmount * bracket.rate
+    const taxableAmount = Math.min(salary, bandMax) - bracket.min
+    const taxOwed = taxableAmount * bracket.rate
 
-      return { ...bracket, taxableAmount, taxOwed }
-    })
-    .filter((band) => band.taxableAmount > 0)
+    return { ...bracket, taxableAmount, taxOwed }
+  })
 
   const totalTax = bands.reduce((sum, band) => sum + band.taxOwed, 0)
   const effectiveRate = totalTax / salary
