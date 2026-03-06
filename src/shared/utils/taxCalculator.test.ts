@@ -26,7 +26,7 @@ describe('calculateTax', () => {
 
   it('returns $7,500.00 for $50,000 salary', () => {
     const result = calculateTax(50000, brackets2022)
-    expect(roundToCents(result.totalTax)).toBe(7500.00)
+    expect(roundToCents(result.totalTax)).toBe(7500.0)
   })
 
   it('returns $17,739.17 for $100,000 salary', () => {

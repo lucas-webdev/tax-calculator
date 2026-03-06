@@ -1,9 +1,6 @@
 import type { TaxBracket, TaxCalculationResult, BandResult } from '../types/tax'
 
-export function calculateTax(
-  salary: number,
-  brackets: TaxBracket[]
-): TaxCalculationResult {
+export function calculateTax(salary: number, brackets: TaxBracket[]): TaxCalculationResult {
   if (salary <= 0) {
     return { salary, totalTax: 0, effectiveRate: 0, bands: [] }
   }
@@ -16,6 +13,7 @@ export function calculateTax(
         return { ...bracket, taxableAmount: 0, taxOwed: 0 }
       }
 
+      // clamp salary to the band ceiling, then subtract the floor — progressive tax core
       const taxableAmount = Math.min(salary, bandMax) - bracket.min
       const taxOwed = taxableAmount * bracket.rate
 

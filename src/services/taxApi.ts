@@ -10,13 +10,10 @@ axiosRetry(apiClient, {
   retries: 3,
   retryDelay: axiosRetry.exponentialDelay,
   retryCondition: (error) =>
-    axiosRetry.isNetworkOrIdempotentRequestError(error) ||
-    error.response?.status === 500,
+    axiosRetry.isNetworkOrIdempotentRequestError(error) || error.response?.status === 500, // API intentionally throws random 500s
 })
 
 export const fetchTaxBrackets = async (year: number): Promise<TaxBracketsResponse> => {
-  const response = await apiClient.get<TaxBracketsResponse>(
-    `/tax-calculator/tax-year/${year}`
-  )
+  const response = await apiClient.get<TaxBracketsResponse>(`/tax-calculator/tax-year/${year}`)
   return response.data
 }
