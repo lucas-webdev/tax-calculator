@@ -3,7 +3,7 @@ import type { TaxFormProps } from './types'
 
 const SUPPORTED_YEARS = [2022, 2021, 2020, 2019] as const
 
-export default function TaxForm({ onSubmit, isLoading }: TaxFormProps) {
+export default function TaxForm({ onSubmit, onReset, isLoading }: TaxFormProps) {
   const [salary, setSalary] = useState('')
   const [salaryError, setSalaryError] = useState<string | null>(null)
   const [year, setYear] = useState<number>(SUPPORTED_YEARS[0])
@@ -16,15 +16,21 @@ export default function TaxForm({ onSubmit, isLoading }: TaxFormProps) {
     return null
   }
 
+  // Show validation feedback on blur to avoid interrupting while the user is still typing
   const handleSalaryBlur = () => {
     setSalaryError(validateSalary(salary))
   }
 
+  // Guard against invalid values that bypass HTML validation (e.g. pasting negative numbers)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const parsed = parseFloat(salary)
-    if (isNaN(parsed) || parsed < 0) return
-    onSubmit(parsed, year)
+    const error = validateSalary(salary)
+    setSalaryError(error)
+    if (error || !salary) {
+      onReset()
+      return
+    }
+    onSubmit(parseFloat(salary), year)
   }
 
   return (

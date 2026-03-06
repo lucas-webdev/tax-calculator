@@ -1,17 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import TaxForm from './TaxForm'
 
 describe('TaxForm', () => {
   const onSubmit = vi.fn()
+  const onReset = vi.fn()
 
   beforeEach(() => {
     onSubmit.mockClear()
+    onReset.mockClear()
   })
 
   it('renders salary input and year select', () => {
-    render(<TaxForm onSubmit={onSubmit} isLoading={false} />)
+    render(<TaxForm onSubmit={onSubmit} onReset={onReset} isLoading={false} />)
 
     expect(screen.getByLabelText(/annual salary/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/tax year/i)).toBeInTheDocument()
@@ -20,7 +22,7 @@ describe('TaxForm', () => {
 
   it('calls onSubmit with salary and year', async () => {
     const user = userEvent.setup()
-    render(<TaxForm onSubmit={onSubmit} isLoading={false} />)
+    render(<TaxForm onSubmit={onSubmit} onReset={onReset} isLoading={false} />)
 
     await user.type(screen.getByLabelText(/annual salary/i), '100000')
     await user.click(screen.getByRole('button', { name: /calculate tax/i }))
@@ -30,7 +32,7 @@ describe('TaxForm', () => {
 
   it('allows selecting a different tax year', async () => {
     const user = userEvent.setup()
-    render(<TaxForm onSubmit={onSubmit} isLoading={false} />)
+    render(<TaxForm onSubmit={onSubmit} onReset={onReset} isLoading={false} />)
 
     await user.selectOptions(screen.getByLabelText(/tax year/i), '2019')
     await user.type(screen.getByLabelText(/annual salary/i), '50000')
@@ -40,25 +42,27 @@ describe('TaxForm', () => {
   })
 
   it('disables submit button when loading', () => {
-    render(<TaxForm onSubmit={onSubmit} isLoading={true} />)
+    render(<TaxForm onSubmit={onSubmit} onReset={onReset} isLoading={true} />)
 
     expect(screen.getByRole('button', { name: /calculating/i })).toBeDisabled()
   })
 
   it('disables submit button when salary is empty', () => {
-    render(<TaxForm onSubmit={onSubmit} isLoading={false} />)
+    render(<TaxForm onSubmit={onSubmit} onReset={onReset} isLoading={false} />)
 
     expect(screen.getByRole('button', { name: /calculate tax/i })).toBeDisabled()
   })
 
-  it('does not call onSubmit for negative salary', async () => {
-    const user = userEvent.setup()
-    render(<TaxForm onSubmit={onSubmit} isLoading={false} />)
+  it('calls onReset and shows error for negative salary', () => {
+    render(<TaxForm onSubmit={onSubmit} onReset={onReset} isLoading={false} />)
 
     const input = screen.getByLabelText(/annual salary/i)
-    await user.type(input, '-100')
-    await user.click(screen.getByRole('button', { name: /calculate tax/i }))
+    // fireEvent bypasses browser-level number input restrictions that block negative values
+    fireEvent.change(input, { target: { value: '-100' } })
+    fireEvent.submit(screen.getByRole('button', { name: /calculate tax/i }))
 
     expect(onSubmit).not.toHaveBeenCalled()
+    expect(onReset).toHaveBeenCalled()
+    expect(screen.getByText(/salary must be a positive number/i)).toBeInTheDocument()
   })
 })

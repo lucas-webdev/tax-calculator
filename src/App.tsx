@@ -4,13 +4,13 @@ import TaxForm from './components/TaxForm/TaxForm'
 import TaxResults from './components/TaxResults/TaxResults'
 
 function App() {
-  const { result, isLoading, error, calculate } = useTaxCalculation()
+  const { result, isLoading, error, calculate, reset } = useTaxCalculation()
 
   return (
     <div className="mx-auto flex min-h-screen max-w-2xl flex-col gap-8 px-4 py-12">
       <h1 className="text-3xl font-bold text-gray-900">Tax Calculator per year</h1>
 
-      <TaxForm onSubmit={calculate} isLoading={isLoading} />
+      <TaxForm onSubmit={calculate} onReset={reset} isLoading={isLoading} />
 
       {error && (
         <div

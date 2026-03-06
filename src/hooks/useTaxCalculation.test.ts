@@ -125,4 +125,22 @@ describe('useTaxCalculation', () => {
 
     expect(mockedFetch).toHaveBeenCalledWith(2019)
   })
+
+  it('clears result and error when reset is called', async () => {
+    mockedFetch.mockResolvedValue({ tax_brackets: mockBrackets })
+
+    const { result } = renderHook(() => useTaxCalculation())
+
+    await act(async () => {
+      await result.current.calculate(50000, 2022)
+    })
+    expect(result.current.result).not.toBeNull()
+
+    act(() => {
+      result.current.reset()
+    })
+
+    expect(result.current.result).toBeNull()
+    expect(result.current.error).toBeNull()
+  })
 })

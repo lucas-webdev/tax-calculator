@@ -2,18 +2,17 @@ import { useState, useCallback } from 'react'
 import { fetchTaxBrackets } from '../services/taxApi'
 import { calculateTax } from '../shared/utils/taxCalculator'
 import type { TaxCalculationResult } from '../shared/types/tax'
-
-interface UseTaxCalculationReturn {
-  result: TaxCalculationResult | null
-  isLoading: boolean
-  error: string | null
-  calculate: (salary: number, year: number) => Promise<void>
-}
+import type { UseTaxCalculationReturn } from './types'
 
 export function useTaxCalculation(): UseTaxCalculationReturn {
   const [result, setResult] = useState<TaxCalculationResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const reset = useCallback(() => {
+    setResult(null)
+    setError(null)
+  }, [])
 
   const calculate = useCallback(async (salary: number, year: number) => {
     setIsLoading(true)
@@ -32,5 +31,5 @@ export function useTaxCalculation(): UseTaxCalculationReturn {
     }
   }, [])
 
-  return { result, isLoading, error, calculate }
+  return { result, isLoading, error, calculate, reset }
 }
