@@ -1,73 +1,63 @@
-# React + TypeScript + Vite
+# Tax Calculator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web application that calculates Canadian federal income tax based on annual salary and tax year.
+Built with React, TypeScript and TailwindCSS.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 22.13.0+
+- Yarn
+- Docker (to run the API locally)
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Start the API
+```bash
+docker pull ptsdocker16/interview-test-server
+docker run --init -p 5001:5001 -it ptsdocker16/interview-test-server
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 2. Install dependencies
+```bash
+yarn
 ```
+
+### 3. Start the development server
+```bash
+yarn dev
+```
+
+The app will be available at http://localhost:5173.
+
+## Running Tests
+```bash
+yarn test:run
+```
+
+## Environment Variables
+
+| Variable | Description | Default |
+|---|---|---|
+| `VITE_API_BASE_URL` | Base URL for the tax brackets API | `http://localhost:5001` |
+
+## Architecture
+
+### Project Structure
+```
+src/
+├── shared/
+│   ├── types/        # Shared domain types
+│   └── utils/        # Pure utility functions
+├── components/       # React components
+├── hooks/            # Custom React hooks
+├── services/         # API communication layer
+└── test/             # Test setup
+```
+
+### Key Decisions
+
+**Retry logic** — The API throws random errors. The service layer uses `axios-retry` with exponential backoff, retrying up to 3 times on network errors and 500 responses.
+
+**Pure calculation logic** — Tax calculation lives in `shared/utils/taxCalculator.ts`, completely isolated from React and UI concerns. This makes it straightforward to test and reason about independently.
+
+**shared/ folder** — Types and utils that are consumed across multiple layers live in `shared/` to make the boundary between domain logic and UI explicit.
